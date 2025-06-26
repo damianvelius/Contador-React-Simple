@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import { z } from 'zod';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -10,7 +11,6 @@ function App() {
   const [valueMinUser, setValueMinUser] = useState(0);
   const [valueMaxUser, setValueMaxUser] = useState(0);
 
-  count > 0 ? 'green' : '';
   useEffect(() => {
     if (count >= valueMaxDefault) {
       alert(`Llegaste al tope ${valueMaxDefault} pillín`);
@@ -46,17 +46,36 @@ function App() {
   };
 
   const sendValue = () => {
+    const valueCounter = z.object({
+      value: z.number().min(valueMinDefault).max(valueMaxDefault),
+    });
+    const result = valueCounter.safeParse({ value: valueUser });
+
+    if (result.success) {
+      setCount(valueUser);
+    } else {
+      alert(
+        `El valor pillin no está entre ${valueMinDefault} y ${valueMaxDefault}`
+      );
+    }
     setValueUser(valueUser);
-    setCount(valueUser);
   };
 
   const sendMaxValue = () => {
+    if (valueMaxUser < valueMinDefault) {
+      alert('El valor maximo no puede ser mas chico que el valor minimo');
+      return;
+    }
     setValueMaxUser(valueMaxUser);
     setValueMaxDefault(valueMaxUser);
     setClicks((clicks) => clicks + 1);
   };
 
   const sendMinValue = () => {
+    if (valueMinUser > valueMaxDefault) {
+      alert('El valor minimo no puede ser mas grande que el valor maximo');
+      return;
+    }
     setValueMinUser(valueMinUser);
     setValueMinDefault(valueMinUser);
     setClicks((clicks) => clicks + 1);
@@ -114,8 +133,6 @@ function App() {
         />
         <input
           type="number"
-          max={10}
-          min={-10}
           value={valueUser}
           onChange={(e) => {
             setValueUser(Number(e.target.value));
