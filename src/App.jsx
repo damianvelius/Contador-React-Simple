@@ -4,97 +4,84 @@ import { z } from 'zod';
 
 function App() {
   const [count, setCount] = useState(0);
-  const [valueMaxDefault, setValueMaxDefault] = useState(10);
-  const [valueMinDefault, setValueMinDefault] = useState(-10);
+  const [limits, setLimits] = useState({
+    min: -10,
+    max: 10,
+  });
+
+  const [inputs, setInputs] = useState({
+    min: -10,
+    max: 10,
+  });
+
   const [clicks, setClicks] = useState(0);
   const [valueUser, setValueUser] = useState(0);
-  const [valueMinUser, setValueMinUser] = useState(0);
-  const [valueMaxUser, setValueMaxUser] = useState(0);
 
   useEffect(() => {
-    if (count >= valueMaxDefault) {
-      alert(`Llegaste al tope ${valueMaxDefault} pillín`);
-    } else if (count <= valueMinDefault) {
-      alert(`Llegaste al tope ${valueMinDefault} pillín`);
+    if (count >= limits.max || count <= limits.min) {
+      // después vas a mostrar un mensaje acá con Zod o en la interfaz
     }
-  }, [count]);
+  }, [count, limits]);
 
-  const Increment = () => {
-    if (count >= valueMaxDefault) {
-    } else {
-      setCount((count) => count + 1);
-      setClicks((clicks) => clicks + 1);
-    }
-  };
+  const changeCount = (change) => {
+    const nextCount = count + change;
 
-  const Decrement = () => {
-    if (count <= valueMinDefault) {
-    } else {
-      setCount((count) => count - 1);
-      setClicks((clicks) => clicks + 1);
-    }
+    if (nextCount > limits.max || nextCount < limits.min) return;
+
+    setCount(nextCount);
+    setClicks((clicks) => clicks + 1);
   };
 
   const Reset = () => {
     setCount(0);
-    setValueMaxDefault(10);
-    setValueMinDefault(-10);
+    setLimits({ min: -10, max: 10 });
+    setInputs({ min: -10, max: 10 });
     setValueUser(0);
-    setValueMaxUser(0);
-    setValueMinUser(0);
     setClicks(0);
   };
 
   const sendValue = () => {
     const valueCounter = z.object({
-      value: z.number().min(valueMinDefault).max(valueMaxDefault),
+      value: z.number().min(limits.min).max(limits.max),
     });
     const result = valueCounter.safeParse({ value: valueUser });
 
     if (result.success) {
       setCount(valueUser);
     } else {
-      alert(
-        `El valor pillin no está entre ${valueMinDefault} y ${valueMaxDefault}`
-      );
+      alert(`El valor pillin no está entre ${limits.min} y ${limits.max}`);
     }
     setValueUser(valueUser);
   };
 
   const sendMaxValue = () => {
-    if (valueMaxUser < valueMinDefault) {
+    if (inputs.max < inputs.min) {
       alert('El valor maximo no puede ser mas chico que el valor minimo');
       return;
     }
-    setValueMaxUser(valueMaxUser);
-    setValueMaxDefault(valueMaxUser);
+    setLimits((prevMax) => ({ ...prevMax, max: inputs.max }));
     setClicks((clicks) => clicks + 1);
   };
 
   const sendMinValue = () => {
-    if (valueMinUser > valueMaxDefault) {
+    if (inputs.min > limits.max) {
       alert('El valor minimo no puede ser mas grande que el valor maximo');
       return;
     }
-    setValueMinUser(valueMinUser);
-    setValueMinDefault(valueMinUser);
+    setLimits((prevMin) => ({ ...prevMin, min: inputs.min }));
     setClicks((clicks) => clicks + 1);
   };
 
-  let colorIncrement = count > 0 ? 'green' : '';
-  let colorDecrement = count < 0 ? 'red' : '';
+  const currentColor = count > 0 ? 'green' : count < 0 ? 'red' : '';
+  const minButton = count > limits.min ? 'red' : '';
+  const maxButton = count < limits.max ? 'green' : '';
 
   return (
     <>
       <div className="container-titles">
-        <h1 style={{ color: count > 0 ? colorIncrement : colorDecrement }}>
-          Contador
-        </h1>
+        <h1 style={{ color: currentColor }}>Contador</h1>
         <h2>Valor Actual </h2>
-        <p
-          className="current-value"
-          style={{ color: count > 0 ? colorIncrement : colorDecrement }}
-        >
+        <p className="current-value" style={{ color: currentColor }}>
           {count}
         </p>
       </div>
@@ -102,24 +89,24 @@ function App() {
         Lamentablemente este contador es especial y no te deja pasar entre{' '}
       </h3>
       <div className="container-value">
-        <p style={{ color: 'red' }}>{valueMinDefault}</p>{' '}
-        <p style={{ color: 'green' }}>{valueMaxDefault}</p>
+        <p style={{ color: 'red' }}>{limits.min}</p>{' '}
+        <p style={{ color: 'green' }}>{limits.max}</p>
       </div>
       <p>A menos que ahi abajo quieras cambiar estos valores.....</p>
 
       <div className="container-button">
         <button
-          style={{ backgroundColor: colorDecrement }}
-          onClick={() => Decrement()}
-          disabled={count <= valueMinDefault}
+          style={{ backgroundColor: minButton }}
+          onClick={() => changeCount(-1)}
+          disabled={count <= limits.min}
         >
           -
         </button>
         <button onClick={() => Reset()}>Reset</button>
         <button
-          style={{ backgroundColor: colorIncrement }}
-          onClick={() => Increment()}
-          disabled={count >= valueMaxDefault}
+          style={{ backgroundColor: maxButton }}
+          onClick={() => changeCount(1)}
+          disabled={count >= limits.max}
         >
           +
         </button>
@@ -127,9 +114,12 @@ function App() {
       <div className="container-inputs">
         <input
           type="number"
-          value={valueMinUser}
+          value={inputs.min}
           onChange={(e) => {
-            setValueMinUser(Number(e.target.value));
+            setInputs((prevMin) => ({
+              ...prevMin,
+              min: Number(e.target.value),
+            }));
           }}
         />
         <button onClick={sendMinValue}>Valor Minimo Click</button>
@@ -143,10 +133,8 @@ function App() {
         <button onClick={sendValue}>Valor Contador Inicial</button>
         <input
           type="number"
-          value={valueMaxUser}
-          onChange={(e) => {
-            setValueMaxUser(Number(e.target.value));
-          }}
+          value={inputs.max}
+          onChange={(e) => setValueUser(Number(e.target.value))}
         />
         <button onClick={sendMaxValue}>Valor Maximo Click</button>
       </div>
