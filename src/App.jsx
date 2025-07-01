@@ -86,34 +86,28 @@ function App() {
 
   return (
     <>
-      <h1 style={{ color: count > 0 ? colorIncrement : colorDecrement }}>
-        Contador
-      </h1>
-      <h2>
-        Valor Actual{' '}
-        <p style={{ color: count > 0 ? colorIncrement : colorDecrement }}>
+      <div className="container-titles">
+        <h1 style={{ color: count > 0 ? colorIncrement : colorDecrement }}>
+          Contador
+        </h1>
+        <h2>Valor Actual </h2>
+        <p
+          className="current-value"
+          style={{ color: count > 0 ? colorIncrement : colorDecrement }}
+        >
           {count}
         </p>
-      </h2>
-      <h2>
-        Lamentablemente este contador es especial y no te deja pasar entre{' '}
-        <p style={{ color: 'green' }}>{valueMaxDefault}</p>{' '}
-        <p style={{ color: 'red' }}>{valueMinDefault}</p>
-      </h2>
-      <p>A menos que ahi abajo quieras cambiar estos valores.....</p>
+      </div>
       <h3>
-        Las veces que hiciste click en estos hermosos botones es de {clicks}{' '}
-        pillin
+        Lamentablemente este contador es especial y no te deja pasar entre{' '}
       </h3>
-      <div className="card">
-        <button
-          style={{ backgroundColor: colorIncrement }}
-          onClick={() => Increment()}
-          disabled={count >= valueMaxDefault}
-        >
-          +
-        </button>
-        <button onClick={() => Reset()}>Reset</button>
+      <div className="container-value">
+        <p style={{ color: 'red' }}>{valueMinDefault}</p>{' '}
+        <p style={{ color: 'green' }}>{valueMaxDefault}</p>
+      </div>
+      <p>A menos que ahi abajo quieras cambiar estos valores.....</p>
+
+      <div className="container-button">
         <button
           style={{ backgroundColor: colorDecrement }}
           onClick={() => Decrement()}
@@ -121,8 +115,15 @@ function App() {
         >
           -
         </button>
+        <button onClick={() => Reset()}>Reset</button>
+        <button
+          style={{ backgroundColor: colorIncrement }}
+          onClick={() => Increment()}
+          disabled={count >= valueMaxDefault}
+        >
+          +
+        </button>
       </div>
-      <h2>Pon un numero y el contador te lo va a tomar</h2>
       <div className="container-inputs">
         <input
           type="number"
@@ -131,6 +132,7 @@ function App() {
             setValueMinUser(Number(e.target.value));
           }}
         />
+        <button onClick={sendMinValue}>Valor Minimo Click</button>
         <input
           type="number"
           value={valueUser}
@@ -138,6 +140,7 @@ function App() {
             setValueUser(Number(e.target.value));
           }}
         />
+        <button onClick={sendValue}>Valor Contador Inicial</button>
         <input
           type="number"
           value={valueMaxUser}
@@ -145,12 +148,9 @@ function App() {
             setValueMaxUser(Number(e.target.value));
           }}
         />
+        <button onClick={sendMaxValue}>Valor Maximo Click</button>
       </div>
-      <div>
-        <button onClick={sendMinValue}>Mandame un valor minimo</button>
-        <button onClick={sendValue}>Mandame el valor de donde comienza</button>
-        <button onClick={sendMaxValue}>Mandame un valor maximo</button>
-      </div>
+      <p>Las veces que hiciste click {clicks} en los botones pillin</p>
     </>
   );
 }
