@@ -3,36 +3,48 @@ import './App.css';
 import { z } from 'zod';
 
 function App() {
+  // Estado para el valor actual del contador
   const [count, setCount] = useState(0);
+
+  // Estado con los límites actuales del contador
   const [limits, setLimits] = useState({
     min: -10,
     max: 10,
   });
 
+  // Estado para los inputs que el usuario puede modificar
   const [inputs, setInputs] = useState({
     min: -10,
     max: 10,
   });
 
+  // Estado para contar cuántas veces se hicieron clics en los botones
   const [clicks, setClicks] = useState(0);
+
+  // Valor numérico que el usuario puede ingresar manualmente
   const [valueUser, setValueUser] = useState(0);
 
-  useEffect(() => {
-    if (count >= limits.max || count <= limits.min) {
-      // después vas a mostrar un mensaje acá con Zod o en la interfaz
-    }
-  }, [count, limits]);
+  // Estado para mostrar mensajes de error si hay problemas con los valores ingresados
+  const [errorMessage, setErrorMessage] = useState('');
 
+  // Cada vez que cambia el contador, se limpia el mensaje de error
+  useEffect(() => {
+    setErrorMessage('');
+  }, [count]);
+
+  // Esta función aumenta o disminuye el contador según el parámetro recibido
   const changeCount = (change) => {
     const nextCount = count + change;
 
+    // Si el siguiente valor está fuera de los límites, no hace nada
     if (nextCount > limits.max || nextCount < limits.min) return;
 
     setCount(nextCount);
     setClicks((clicks) => clicks + 1);
   };
 
-  const Reset = () => {
+  // Resetea todo a los valores iniciales(duhhhh)
+  const reset = () => {
     setCount(0);
     setLimits({ min: -10, max: 10 });
     setInputs({ min: -10, max: 10 });
@@ -40,39 +52,65 @@ function App() {
     setClicks(0);
   };
 
+  // Valida y aplica el valor ingresado manualmente por el usuario
   const sendValue = () => {
-    const valueCounter = z.object({
-      value: z.number().min(limits.min).max(limits.max),
-    });
-    const result = valueCounter.safeParse({ value: valueUser });
+    const counterScheme = z
+      .number()
+      .refine((value) => value >= limits.min && value <= limits.max, {
+        message: `El valor ingresado pillin tiene que estar entre los valores de ${limits.min} y ${limits.max} `,
+      });
+
+    const result = counterScheme.safeParse(valueUser);
 
     if (result.success) {
       setCount(valueUser);
+      setErrorMessage('');
     } else {
-      alert(`El valor pillin no está entre ${limits.min} y ${limits.max}`);
+      setErrorMessage(result.error.issues[0].message);
     }
     setValueUser(valueUser);
   };
 
+  // Valida y aplica el nuevo valor máximo si es válido respecto al mínimo actual
   const sendMaxValue = () => {
-    if (inputs.max < inputs.min) {
-      alert('El valor maximo no puede ser mas chico que el valor minimo');
-      return;
+    const sendScheme = z.number().min(inputs.min, {
+      message: `El valor máximo no puede ser menor que el mínimo actual (${inputs.min})`,
+    });
+
+    const result = sendScheme.safeParse(inputs.max);
+
+    if (result.success) {
+      // Se actualiza solo el valor máximo, manteniendo el mínimo existente
+      setLimits((preMax) => ({ ...preMax, max: inputs.max }));
+      setErrorMessage('');
+      setClicks((clicks) => clicks + 1);
+    } else {
+      setErrorMessage(result.error.issues[0].message);
     }
-    setLimits((prevMax) => ({ ...prevMax, max: inputs.max }));
-    setClicks((clicks) => clicks + 1);
   };
 
+  // Valida y aplica el nuevo valor mínimo si es válido respecto al máximo actual
   const sendMinValue = () => {
-    if (inputs.min > limits.max) {
-      alert('El valor minimo no puede ser mas grande que el valor maximo');
-      return;
+    const sendScheme = z.number().max(inputs.max, {
+      message: `El valor minimo no puede ser mayor que el maximo actual (${inputs.max})`,
+    });
+
+    const result = sendScheme.safeParse(inputs.min);
+
+    if (result.success) {
+      // Se actualiza solo el valor mínimo, manteniendo el máximo existente
+      setLimits((preMin) => ({ ...preMin, min: inputs.min }));
+      setErrorMessage('');
+      setClicks((clicks) => clicks + 1);
+    } else {
+      setErrorMessage(result.error.issues[0].message);
     }
-    setLimits((prevMin) => ({ ...prevMin, min: inputs.min }));
-    setClicks((clicks) => clicks + 1);
   };
 
+  // Colores condicionales para mostrar si el número es positivo, negativo o cero
   const currentColor = count > 0 ? 'green' : count < 0 ? 'red' : '';
+
+  // Colores de los botones según si pueden usarse o no
   const minButton = count > limits.min ? 'red' : '';
   const maxButton = count < limits.max ? 'green' : '';
 
@@ -102,7 +140,7 @@ function App() {
         >
           -
         </button>
-        <button onClick={() => Reset()}>Reset</button>
+        <button onClick={() => reset()}>Reset</button>
         <button
           style={{ backgroundColor: maxButton }}
           onClick={() => changeCount(1)}
@@ -134,10 +172,16 @@ function App() {
         <input
           type="number"
           value={inputs.max}
-          onChange={(e) => setValueUser(Number(e.target.value))}
+          onChange={(e) => {
+            setInputs((prevMax) => ({
+              ...prevMax,
+              max: Number(e.target.value),
+            }));
+          }}
         />
         <button onClick={sendMaxValue}>Valor Maximo Click</button>
       </div>
+      {errorMessage && <p className="error-message">{errorMessage}</p>}
       <p>Las veces que hiciste click {clicks} en los botones pillin</p>
     </>
   );

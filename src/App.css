@@ -3,6 +3,9 @@
   margin: 0 auto;
   padding: 0rem 0.4rem;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
 .container-titles h1,
@@ -50,29 +53,50 @@ input {
   text-align: center;
 }
 
+.error-message {
+  color: whitesmoke;
+  font-weight: bold;
+  margin-top: 10px;
+  background-color: #292525;
+  border-radius: 30px;
+}
+
 /* tablet y escritorio */
 @media (min-width: 768px) {
   .container-titles,
   .container-value {
     max-width: 350px;
     margin: 0 auto;
+    padding: 8px;
   }
+
   .container-button {
     margin: 0 auto;
-    padding-bottom: 20px;
+    padding-bottom: 30px;
   }
+
   .container-inputs {
     display: grid;
-    gap: 10px;
-    max-width: 240px;
+    grid-template-columns: 1fr auto;
+    gap: 12px 12px;
+    max-width: 360px;
     margin: 0 auto;
+    align-items: center;
   }
+
   .container-inputs input {
     max-width: 100px;
-    margin: 0 auto;
-    text-align: right;
-    margin-bottom: 6px;
     border-radius: 30px;
+    text-align: center;
+    margin: 0;
+    height: 30px;
+  }
+
+  .container-inputs button {
+    white-space: nowrap;
+    height: 32px;
+    line-height: 30px;
+    padding: 0 10px;
   }
 }
 /* escritorio grande */
